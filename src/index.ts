@@ -34,9 +34,9 @@ class EasyTables {
     page: number;
     dataNames: string[];
   };
-  private client: {
-    limit: number;
-  };
+  //  private client: {
+  //    limit: number;
+  //  };
 
   constructor(opts: EasyTablesOptions) {
     this.serverEnabled = !opts.clientEnabled;
@@ -65,9 +65,9 @@ class EasyTables {
       page: opts.server?.page || 1,
       dataNames: opts.server?.dataNames ? opts.server.dataNames.split(".") : [],
     };
-    this.client = opts.client || {
-      limit: 10,
-    };
+    //    this.client = opts.client || {
+    //      limit: 10,
+    //    };
 
     if (this.renderFunction) {
       this.updateTable();
@@ -147,13 +147,15 @@ class EasyTables {
       if (this.dataMode === DataMode.Filtered) {
         this.dataMode = DataMode.Paginated;
         return this.filterData() as any;
-      } else {
-        const paginatedData = this._data;
-        const startIndex = (this.currentPage - 1) * this.perPage;
-        const endIndex = startIndex + this.perPage;
-        return paginatedData.slice(startIndex, endIndex) as any;
       }
+
+      const paginatedData = this._data;
+      const startIndex = (this.currentPage - 1) * this.perPage;
+      const endIndex = startIndex + this.perPage;
+      return paginatedData.slice(startIndex, endIndex) as any;
     }
+
+    return [];
   }
 
   // Set the search query
