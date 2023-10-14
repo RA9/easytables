@@ -1,16 +1,16 @@
 {
-  "name": "vite-vanilla-ts-lib-starter",
+  "name": "easytables",
   "private": true,
-  "version": "0.0.2",
-  "main": "./dist/vite-vanilla-ts-lib-starter.cjs",
-  "module": "./dist/vite-vanilla-ts-lib-starter.mjs",
+  "version": "0.0.5",
+  "main": "./dist/easytables.cjs",
+  "module": "./dist/easytables.mjs",
   "exports": {
     ".": {
-      "require": "./dist/vite-vanilla-ts-lib-starter.cjs",
-      "import": "./dist/vite-vanilla-ts-lib-starter.mjs"
+      "require": "./dist/easytables.cjs",
+      "import": "./dist/easytables.mjs"
     }
   },
-  "types": "./dist/vite-vanilla-ts-lib-starter.d.ts",
+  "types": "./dist/easytables.d.ts",
   "scripts": {
     "dev": "vite --host",
     "build": "rimraf dist && tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts",
