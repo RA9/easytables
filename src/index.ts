@@ -129,10 +129,6 @@ class EasyTables {
             this._data = actualData;
 
             return actualData.slice(startIndex, endIndex);
-          } else {
-            // Update the _data property with the extracted actual data
-            this._data = actualData;
-            return actualData;
           }
         } else {
           console.error(
@@ -167,6 +163,12 @@ class EasyTables {
       this.searchQuery = query;
       this.dataMode = DataMode.Filtered;
       this.currentPage = 1; // Reset to the first page when searching
+      this.updateTable();
+    }
+
+    if (query.length === 0) {
+      this.currentPage = 1; // Reset to the first page when searching
+      this.dataMode = DataMode.Paginated;
       this.updateTable();
     }
   }
