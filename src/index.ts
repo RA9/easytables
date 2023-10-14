@@ -8,6 +8,9 @@ interface EasyTablesOptions {
     page: number; // Current page for server-side
     dataNames: string; // Comma-separated data names for server-side (e.g., "data1,data2,data3")
   };
+  client?: {
+    limit: number;
+  };
   renderFunction?: (data: string[]) => void; // Custom rendering function
 }
 
@@ -30,6 +33,9 @@ class EasyTables {
     limit: number;
     page: number;
     dataNames: string[];
+  };
+  private client: {
+    limit: number;
   };
 
   constructor(opts: EasyTablesOptions) {
@@ -58,6 +64,9 @@ class EasyTables {
       limit: opts.server?.limit || 10,
       page: opts.server?.page || 1,
       dataNames: opts.server?.dataNames ? opts.server.dataNames.split(".") : [],
+    };
+    this.client = opts.client || {
+      limit: 10,
     };
 
     if (this.renderFunction) {
@@ -113,9 +122,8 @@ class EasyTables {
           }
 
           if (this.dataMode === DataMode.Paginated) {
-            const startIndex =
-              (this.currentPage - 1) * this.serverOptions.limit;
-            const endIndex = startIndex + this.serverOptions.limit;
+            const startIndex = (this.currentPage - 1) * this.perPage;
+            const endIndex = startIndex + this.perPage;
 
             // Update the _data property with the extracted actual data
             this._data = actualData;
@@ -218,17 +226,17 @@ class EasyTables {
   }
 
   // Method to get information about the items being displayed
-  getShowingInfo(dataMode: DataMode = DataMode.Paginated): string {
-    const totalItems = this.getTotalItems(dataMode);
+  getShowingInfo(): string {
+    const totalItems = this.getTotalItems();
     const startIndex = (this.currentPage - 1) * this.perPage + 1;
     const endIndex = Math.min(startIndex + this.perPage - 1, totalItems);
     return `Showing ${startIndex} to ${endIndex} of ${totalItems} items.`;
   }
 
-  private getTotalItems(dataMode: DataMode): number {
-    if (dataMode === DataMode.Filtered) {
+  private getTotalItems(): number {
+    if (this.dataMode === DataMode.Filtered) {
       return this.filterData().length;
-    } else if (dataMode === DataMode.Paginated) {
+    } else if (this.dataMode === DataMode.Paginated) {
       return this._data.length;
     } else {
       return 0;
