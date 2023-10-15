@@ -150,15 +150,15 @@ class EasyTables {
         return [];
       }
     } else {
+      let dataToUse = this._data;
+
       if (this.dataMode === DataMode.Filtered) {
-        this.dataMode = DataMode.Paginated;
-        return this.filterData() as any;
+        dataToUse = this.filterData() as any;
       }
 
-      const paginatedData = this._data;
       const startIndex = (this.currentPage - 1) * this.perPage;
       const endIndex = startIndex + this.perPage;
-      return paginatedData.slice(startIndex, endIndex) as any;
+      return dataToUse.slice(startIndex, endIndex) as any;
     }
 
     return [];
@@ -244,10 +244,24 @@ class EasyTables {
 
   // Method to get information about the items being displayed
   getShowingInfo(): string {
-    const totalItems = this.getTotalItems();
-    const startIndex = (this.currentPage - 1) * this.perPage + 1;
-    const endIndex = Math.min(startIndex + this.perPage - 1, totalItems);
-    return `Showing ${startIndex} to ${endIndex} of ${totalItems} items.`;
+    let totalItems;
+    let startIndex;
+    let endIndex;
+    let filteredItems = "";
+
+    if (this.dataMode === DataMode.Filtered) {
+      const filteredData = this.filterData();
+      totalItems = filteredData.length;
+      startIndex = (this.currentPage - 1) * this.perPage + 1;
+      endIndex = Math.min(startIndex + this.perPage - 1, totalItems);
+      filteredItems = ` (filtered from ${this._data.length} total items)`;
+    } else {
+      totalItems = this.getTotalItems();
+      startIndex = (this.currentPage - 1) * this.perPage + 1;
+      endIndex = Math.min(startIndex + this.perPage - 1, totalItems);
+    }
+
+    return `Showing ${startIndex} to ${endIndex} of ${totalItems} items ${filteredItems}.`;
   }
 
   private getTotalItems(): number {
