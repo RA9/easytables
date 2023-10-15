@@ -36,6 +36,9 @@ class EasyTables {
     dataNames: string[];
   };
 
+  private sortField: string | null = null;
+  private sortOrder: "asc" | "desc" = "asc";
+
   // @ts-ignore
   private client: {
     limit: number;
@@ -99,6 +102,12 @@ class EasyTables {
     }
   }
 
+  sortData(field: string, order: "asc" | "desc" = "asc"): void {
+    this.sortField = field;
+    this.sortOrder = order;
+    this.updateTable();
+  }
+
   // Get data based on the specified data mode (filtered or paginated)
   async getData(): Promise<string[]> {
     if (this.serverEnabled) {
@@ -154,6 +163,36 @@ class EasyTables {
 
       if (this.dataMode === DataMode.Filtered) {
         dataToUse = this.filterData() as any;
+      }
+
+      if (this.sortField) {
+        dataToUse.sort((a: any, b: any) => {
+          if (
+            !a.hasOwnProperty(this.sortField) ||
+            !b.hasOwnProperty(this.sortField)
+          ) {
+            return 0;
+          }
+
+          // @ts-ignore
+          const varA =
+            this.sortField && typeof a[this.sortField] === "string"
+              ? a[this.sortField].toUpperCase()
+              : a[this.sortField || ""];
+          // @ts-ignore
+          const varB =
+            this.sortField && typeof b[this.sortField] === "string"
+              ? b[this.sortField].toUpperCase()
+              : b[this.sortField || ""];
+
+          let comparison = 0;
+          if (varA > varB) {
+            comparison = 1;
+          } else if (varA < varB) {
+            comparison = -1;
+          }
+          return this.sortOrder === "desc" ? comparison * -1 : comparison;
+        });
       }
 
       const startIndex = (this.currentPage - 1) * this.perPage;
