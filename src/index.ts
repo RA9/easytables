@@ -250,6 +250,11 @@ class EasyTables {
     );
   }
 
+  public setPerPage(perPage: number): void {
+    this.perPage = perPage;
+    this.updateTable(); // Update the table to reflect the change
+  }
+
   // Pagination methods
   nextPage(): void {
     if (this.currentPage < this.getTotalPages()) {
