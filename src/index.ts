@@ -10,6 +10,7 @@ interface EasyTablesOptions {
   };
   client?: {
     limit: number;
+    perPage?: number; // Items per page for client-side (default: 10)
   };
   renderFunction?: (data: string[]) => void; // Custom rendering function
 }
@@ -34,9 +35,12 @@ class EasyTables {
     page: number;
     dataNames: string[];
   };
-  //  private client: {
-  //    limit: number;
-  //  };
+
+  // @ts-ignore
+  private client: {
+    limit: number;
+    perPage?: number; // Items per page for client-side (default: 10)
+  };
 
   constructor(opts: EasyTablesOptions) {
     this.serverEnabled = !opts.clientEnabled;
@@ -50,10 +54,15 @@ class EasyTables {
       });
     }
 
+    this.client = {
+      limit: opts.client?.limit || 10,
+      perPage: opts.client?.perPage,
+    };
+
     this.perPage = this.serverEnabled
       ? opts.server?.limit || 10
-      : opts.data
-      ? opts.data.length
+      : opts.client?.perPage
+      ? opts.client.perPage
       : 10;
     this.currentPage = this.serverEnabled ? opts.server?.page || 1 : 1;
     this.searchQuery = "";
@@ -93,17 +102,16 @@ class EasyTables {
   // Get data based on the specified data mode (filtered or paginated)
   async getData(): Promise<string[]> {
     if (this.serverEnabled) {
-      // Server-side data fetching
       try {
         const response = await fetch(this.serverOptions.api_url, {
           method: "GET",
           headers: this.serverOptions.headers,
         });
+
         if (response.ok) {
           const rawData = await response.json();
           let actualData = rawData;
 
-          // Check if dataNames is specified and extract the actual data
           if (
             this.serverOptions.dataNames &&
             this.serverOptions.dataNames.length > 0
@@ -125,7 +133,6 @@ class EasyTables {
             const startIndex = (this.currentPage - 1) * this.perPage;
             const endIndex = startIndex + this.perPage;
 
-            // Update the _data property with the extracted actual data
             this._data = actualData;
 
             return actualData.slice(startIndex, endIndex);
@@ -143,7 +150,6 @@ class EasyTables {
         return [];
       }
     } else {
-      // Client-side data handling (same as before)
       if (this.dataMode === DataMode.Filtered) {
         this.dataMode = DataMode.Paginated;
         return this.filterData() as any;
@@ -158,21 +164,30 @@ class EasyTables {
     return [];
   }
 
+  private debounce(func: Function, delay: number) {
+    let timerId: ReturnType<typeof setTimeout>;
+
+    return function (this: any, ...args: any[]) {
+      clearTimeout(timerId);
+      timerId = setTimeout(() => {
+        func.apply(this, args);
+      }, delay);
+    };
+  }
+
+  setSearchDebounced = this.debounce(this.setSearch, 300);
+
   // Set the search query
-  setSearch(query: string): void {
-    if (query.length > 3) {
-      // our minor check that saves time
-      this.searchQuery = query;
-      this.dataMode = DataMode.Filtered;
-      this.currentPage = 1; // Reset to the first page when searching
-      this.updateTable();
-    }
+  private setSearch(query: string): void {
+    this.searchQuery = query;
+    this.dataMode = DataMode.Filtered;
 
     if (query.length === 0) {
-      this.currentPage = 1; // Reset to the first page when searching
       this.dataMode = DataMode.Paginated;
-      this.updateTable();
     }
+
+    this.currentPage = 1; // Reset to the first page when searching
+    this.updateTable();
   }
 
   // Search in a 2-dimensional array of strings
@@ -218,11 +233,9 @@ class EasyTables {
   getTotalPages(): number {
     if (this.dataMode === DataMode.Filtered) {
       return this.calculateTotalPages(this.filterData().length);
-    } else if (this.dataMode === DataMode.Paginated) {
-      return this.calculateTotalPages(this._data.length);
-    } else {
-      return 0;
     }
+
+    return this.calculateTotalPages(this._data.length);
   }
 
   private calculateTotalPages(totalItems: number): number {
@@ -240,11 +253,9 @@ class EasyTables {
   private getTotalItems(): number {
     if (this.dataMode === DataMode.Filtered) {
       return this.filterData().length;
-    } else if (this.dataMode === DataMode.Paginated) {
-      return this._data.length;
-    } else {
-      return 0;
     }
+
+    return this._data.length;
   }
 
   // Private method to trigger a table update and custom rendering
