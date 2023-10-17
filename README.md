@@ -54,11 +54,11 @@ To get started with EzyTables, you need to include the library in your project. 
 file or use a package manager like npm or yarn:
 
 ```html
-<script src="path/to/EzyTables.iife.js"></script>
+<script type="module" src="https://esm.sh/ezytables"></script>
 ```
 
 ```bash
-npm install @ra9/EzyTables
+npm install ezytables
 ```
 
 ### Usage
@@ -188,8 +188,7 @@ Here's a basic example of how to create a data table with EzyTables:
 </html>
 ```
 
-This simple example demonstrates how to create a table and bind it to EzyTables, apply search functionality, and
-customize the rendering logic.
+This simple example demonstrates how to create a table and bind it to EzyTables, apply search functionality, and customize the rendering logic.
 
 ## 3. API Reference
 
