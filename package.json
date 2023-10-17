@@ -14,8 +14,6 @@
   "scripts": {
     "dev": "vite --host",
     "build": "rimraf dist && tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts",
-    "test": "vitest",
-    "test:coverage": "vitest --coverage",
     "lint:scripts": "eslint . --ext .ts",
     "lint:styles": "stylelint ./**/*.{css,scss}",
     "format:scripts": "prettier . --write",
