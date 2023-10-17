@@ -1,6 +1,3 @@
-Certainly, here is the documentation provided as a Markdown (.md) file:
-
-````markdown
 # EasyTables Documentation
 
 ## Table of Contents
@@ -59,7 +56,6 @@ file or use a package manager like npm or yarn:
 ```html
 <script src="path/to/easytables.js"></script>
 ```
-````
 
 ```bash
 npm install easytables
@@ -133,7 +129,8 @@ customize the rendering logic.
 EasyTables provides the following methods:
 
 - `constructor(opts: EasyTablesOptions)`: Initializes the EasyTables instance.
-- `setSearch(query: string)`: Sets the search query and updates the table.
+- `setSearchDebounced(query: string)`: Sets the search query and updates the table.
+- `sortData(column: string, order: "asc" | "desc")`: Sorts the data by the specified column and order.
 - `nextPage()`: Moves to the next page and updates the table.
 - `prevPage()`: Moves to the previous page and updates the table.
 - `getCurrentPage()`: Returns the current page number.
@@ -170,7 +167,7 @@ prefer a more hands-on approach to table rendering and customization.
 - **Versatility**: It can be used with both server-side and local data sources, making it a versatile option for various
   projects.
 
-# Conclusion
+## Conclusion
 
 **EasyTables** is a minimalist
 
@@ -182,12 +179,6 @@ project.
 For more detailed information and advanced use cases, please refer to the official EasyTables documentation or explore
 the library's source code.
 
-_Note: This documentation provides a simplified overview of EasyTables. Actual documentation for a library should
-include more detailed usage examples, edge cases, and further explanations of available features._
+### About the Author
 
-Feel free to adapt and extend this simplified documentation according to your project's specific requirements.
-
-```
-
-You can save the above content as a `.md` file, and it should render correctly when viewed in Markdown-supported editors or platforms.
-```
+[Carlos S. Nah](http://github.com/ra9) is a software engineer and writer based in Monrovia. He is the author of EasyTables, a minimalist data table library for JavaScript. He enjoys writing about software development, web development, and technology.

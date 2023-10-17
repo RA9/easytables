@@ -20,7 +20,7 @@ enum DataMode {
   Paginated = "paginated",
 }
 
-class EasyTables {
+export class EasyTables {
   private _data: any[] = [];
   private perPage: number;
   private currentPage: number;
@@ -77,9 +77,6 @@ class EasyTables {
       page: opts.server?.page || 1,
       dataNames: opts.server?.dataNames ? opts.server.dataNames.split(".") : [],
     };
-    //    this.client = opts.client || {
-    //      limit: 10,
-    //    };
 
     if (this.renderFunction) {
       this.updateTable();
@@ -324,5 +321,3 @@ class EasyTables {
     }
   }
 }
-
-export default EasyTables;
