@@ -1,15 +1,15 @@
 {
-  "name": "@ra9/easytables",
+  "name": "ezytables",
   "version": "0.7.3",
-  "main": "./dist/@ra9/easytables.cjs",
-  "module": "./dist/@ra9/easytables.mjs",
+  "main": "./dist/ezytables.cjs",
+  "module": "./dist/ezytables.mjs",
   "exports": {
     ".": {
-      "require": "./dist/@ra9/easytables.cjs",
-      "import": "./dist/@ra9/easytables.mjs"
+      "require": "./dist/ezytables.cjs",
+      "import": "./dist/ezytables.mjs"
     }
   },
-  "types": "./dist/@ra9/easytables.d.ts",
+  "types": "./dist/ezytables.d.ts",
   "files": [
     "dist"
   ],
