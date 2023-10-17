@@ -58,7 +58,7 @@ file or use a package manager like npm or yarn:
 ```
 
 ```bash
-npm install easytables
+npm install @ra9/easytables
 ```
 
 ### Usage

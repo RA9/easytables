@@ -19,6 +19,9 @@
   "np": {
     "contents": "dist"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "vite --host",
     "build": "rimraf dist && tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts",
