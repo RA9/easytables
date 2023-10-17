@@ -10,6 +10,15 @@
     }
   },
   "types": "./dist/easytables.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "np": {
+    "contents": "dist"
+  },
   "scripts": {
     "dev": "vite --host",
     "build": "rimraf dist && tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts",
