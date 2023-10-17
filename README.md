@@ -54,7 +54,7 @@ To get started with EasyTables, you need to include the library in your project.
 file or use a package manager like npm or yarn:
 
 ```html
-<script src="path/to/easytables.js"></script>
+<script src="path/to/easytables.iife.js"></script>
 ```
 
 ```bash
@@ -72,28 +72,70 @@ Here's a basic example of how to create a data table with EasyTables:
     <title>EasyTables Example</title>
   </head>
   <body>
+    <div class="table-controls">
+      <label for="limitSelect">Show</label>
+      <select id="limitSelect">
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+      </select>
+      <label for="searchInput">Search</label>
+      <input id="searchInput" placeholder="Search..." />
+    </div>
     <table id="myTable">
       <thead>
         <tr>
-          <th>Item</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Date</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
+    <div class="pagination">
+      <button id="prevButton">Prev</button>
+      <button id="nextButton">Next</button>
+    </div>
     <p id="paginationInfo"></p>
-
+    
     <script>
       const data = [
-        "Item 1",
-        "Item 2",
-        "Item 3",
-        "Another Item",
-        "Yet Another Item",
-        "New Item 1",
-        "New Item 2",
-        "New Item 3",
-        "Even More Items",
-        "Last Item",
+        {
+          name: "John Brown",
+          description:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, vitae aliquam nisl nunc eu nisi. Sed vitae nisl eget nisl aliquam aliquet. Sed vitae nisl eget nisl aliquam aliquet.",
+          status: "Active",
+          date: "2020-01-01",
+        },
+        {
+          name: "Jane Abram",
+          description:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, vitae aliquam nisl nunc eu nisi. Sed vitae nisl eget nisl aliquam aliquet. Sed vitae nisl eget nisl aliquam aliquet.",
+          status: "Active",
+          date: "2020-01-01",
+        },
+        {
+          name: "Sam Smith",
+          description:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, vitae aliquam nisl nunc eu nisi. Sed vitae nisl eget nisl aliquam aliquet. Sed vitae nisl eget nisl aliquam aliquet.",
+          status: "Active",
+          date: "2020-01-01",
+        },
+        {
+          name: "Ekaterina Tankova",
+          description:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, vitae aliquam nisl nunc eu nisi. Sed vitae nisl eget nisl aliquam aliquet. Sed vitae nisl eget nisl aliquam aliquet.",
+          status: "Active",
+          date: "2020-01-01",
+        },
+        {
+          name: "Luisa Hanes",
+          description:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, vitae aliquam nisl nunc eu nisi. Sed vitae nisl eget nisl aliquam aliquet. Sed vitae nisl eget nisl aliquam aliquet.",
+          status: "Active",
+          date: "2020-01-01",
+        },
       ];
 
       const customRender = data => {
@@ -102,20 +144,44 @@ Here's a basic example of how to create a data table with EasyTables:
         tableBody.innerHTML = "";
         data.forEach(item => {
           const row = document.createElement("tr");
-          row.innerHTML = `<td>${item}</td>`;
+          row.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.description}</td>
+            <td>${item.status}</td>
+            <td>${item.date}</td>
+          `;
           tableBody.appendChild(row);
         });
+
+        // Display pagination info
         const pageInfo = document.querySelector("#paginationInfo");
-        pageInfo.textContent = `Page ${easyTable.getCurrentPage()} of ${easyTable.getTotalPages()}`;
+        pageInfo.textContent = `${easyTable.getShowingInfo()}`;
       };
 
       const easyTable = new EasyTables({
         data,
         perPage: 3,
         renderFunction: customRender,
+        clientEnabled: true,
+        client: {
+          perPage: 3,
+        },
       });
 
-      easyTable.setSearch("Item");
+      const searchInput = document.querySelector("#searchInput");
+      searchInput.addEventListener("input", () => {
+        easyTable.setSearchDebounced(searchInput.value);
+      });
+
+      const prevButton = document.querySelector("#prevButton");
+      prevButton.addEventListener("click", () => {
+        easyTable.prevPage();
+      });
+
+      const nextButton = document.querySelector("#nextButton");
+      nextButton.addEventListener("click", () => {
+        easyTable.nextPage();
+      });
     </script>
   </body>
 </html>
