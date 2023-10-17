@@ -1,6 +1,6 @@
 {
   "name": "@ra9/easytables",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "main": "./dist/@ra9/easytables.cjs",
   "module": "./dist/@ra9/easytables.mjs",
   "exports": {
