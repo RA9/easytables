@@ -1,6 +1,6 @@
 {
   "name": "ezytables",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "main": "./dist/ezytables.cjs",
   "module": "./dist/ezytables.mjs",
   "exports": {
