@@ -1,15 +1,15 @@
 {
   "name": "@ra9/easytables",
   "version": "0.7.2",
-  "main": "./dist/easytables.cjs",
-  "module": "./dist/easytables.mjs",
+  "main": "./dist/@ra9/easytables.cjs",
+  "module": "./dist/@ra9/easytables.mjs",
   "exports": {
     ".": {
-      "require": "./dist/easytables.cjs",
-      "import": "./dist/easytables.mjs"
+      "require": "./dist/@ra9/easytables.cjs",
+      "import": "./dist/@ra9/easytables.mjs"
     }
   },
-  "types": "./dist/easytables.d.ts",
+  "types": "./dist/@ra9/easytables.d.ts",
   "files": [
     "dist"
   ],
