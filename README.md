@@ -98,7 +98,7 @@ Here's a basic example of how to create a data table with EasyTables:
       <button id="nextButton">Next</button>
     </div>
     <p id="paginationInfo"></p>
-    
+
     <script>
       const data = [
         {
@@ -244,6 +244,17 @@ project.
 
 For more detailed information and advanced use cases, please refer to the official EasyTables documentation or explore
 the library's source code.
+
+## 5. Roadmap
+
+Here are some of the features and improvements we're planning to add to EasyTables in the future:
+
+- **Server-side rendering support**: To improve performance for large data sets.
+- **Additional customization options**: To give developers even more control over the look and feel of their tables.
+- **Improved accessibility**: To make EasyTables more user-friendly for people with disabilities.
+- **Integration with popular frameworks**: To make it easier to use EasyTables in projects that use frameworks like React, Vue, and Angular.
+
+Please note that this roadmap is subject to change based on user feedback and the needs of our community.
 
 ### About the Author
 
