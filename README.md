@@ -99,6 +99,7 @@ Here's a basic example of how to create a data table with EzyTables:
     </div>
     <p id="paginationInfo"></p>
 
+    <script type="module" src="https://esm.sh/ezytables"></script>
     <script>
       const data = [
         {
