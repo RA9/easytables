@@ -9,8 +9,7 @@ const getPackageName = () => {
 
 const getPackageNameCamelCase = () => {
   try {
-    const parts = getPackageName().split('/');
-    return parts.length > 1 ? parts[1] : parts[0];
+    return getPackageName().replace(/-./g, (char) => char[1].toUpperCase());
   } catch (err) {
     throw new Error("Name property in package.json is missing.");
   }
@@ -20,6 +19,7 @@ const fileName = {
   es: `${getPackageName()}.mjs`,
   cjs: `${getPackageName()}.cjs`,
   iife: `${getPackageName()}.iife.js`,
+  umd: `${getPackageName()}.umd.js`,
 };
 
 const formats = Object.keys(fileName) as Array<keyof typeof fileName>;

@@ -20,7 +20,7 @@ enum DataMode {
   Paginated = "paginated",
 }
 
-export class EasyTables {
+class EasyTables {
   private _data: any[] = [];
   private perPage: number;
   private currentPage: number;
@@ -321,3 +321,5 @@ export class EasyTables {
     }
   }
 }
+
+export { EasyTables as EzyTables };
