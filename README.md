@@ -101,7 +101,7 @@ Here's a basic example of how to create a data table with EzyTables:
 
     <script type="module">
       import { EzyTables } from "https://esm.sh/ezytables";
-      
+
       const data = [
         {
           name: "John Brown",
