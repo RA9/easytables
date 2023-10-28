@@ -1,3 +1,16 @@
+interface Column {
+  name: string;
+  label: string;
+  sortable?: boolean;
+  sortField?: string;
+  width?: string;
+  classes?: {
+    container?: string;
+    element?: string;
+  };
+  func?: (data: any, row: any) => string;
+}
+
 interface EasyTablesOptions {
   clientEnabled?: boolean; // Enable or disable client-side data fetching (default: true)
   data?: string[]; // Data source (only for client-side)
@@ -13,6 +26,19 @@ interface EasyTablesOptions {
     perPage?: number; // Items per page for client-side (default: 10)
   };
   renderFunction?: (data: string[]) => void; // Custom rendering function
+  target?: string; // Target element selector for custom rendering,
+  columns?: Column[]; // Column names for client-side data
+  rows?: any[]; // Rows for client-side data
+  classes?: {
+    container?: string;
+    table?: string;
+    thead?: string;
+    tbody?: string;
+    search?: {
+      container?: string;
+      input?: string;
+    };
+  };
 }
 
 enum DataMode {
@@ -36,6 +62,11 @@ class EasyTables {
     dataNames: string[];
   };
 
+  // private searchText: string = "";
+
+  private targetTable: HTMLElement | null = null;
+  private columns: Column[] = [];
+
   private sortField: string | null = null;
   private sortOrder: "asc" | "desc" = "asc";
 
@@ -51,7 +82,9 @@ class EasyTables {
       this._data = new Proxy(opts.data || [], {
         set: (target: any, key: string, value) => {
           target[key] = value;
-          this.updateTable();
+          if (!opts.target) {
+            this.updateTable();
+          }
           return true;
         },
       });
@@ -59,14 +92,15 @@ class EasyTables {
 
     this.client = {
       limit: opts.client?.limit || 10,
-      perPage: opts.client?.perPage,
+      perPage: opts.client?.perPage || 10,
     };
 
-    this.perPage = this.serverEnabled
-      ? opts.server?.limit || 10
-      : opts.client?.perPage
-      ? opts.client.perPage
-      : 10;
+    this.perPage =
+      this.serverEnabled && !opts.target
+        ? opts.server?.limit || 10
+        : opts.client?.perPage
+        ? opts.client.perPage
+        : 10;
     this.currentPage = this.serverEnabled ? opts.server?.page || 1 : 1;
     this.searchQuery = "";
     this.renderFunction = opts.renderFunction;
@@ -77,6 +111,16 @@ class EasyTables {
       page: opts.server?.page || 1,
       dataNames: opts.server?.dataNames ? opts.server.dataNames.split(".") : [],
     };
+
+    this.columns = opts.columns || [];
+
+    if (opts.target) {
+      this.targetTable = document.querySelector(opts.target);
+
+      this.addStyles();
+
+      this.initTable();
+    }
 
     if (this.renderFunction) {
       this.updateTable();
@@ -107,7 +151,7 @@ class EasyTables {
 
   // Get data based on the specified data mode (filtered or paginated)
   async getData(): Promise<string[]> {
-    if (this.serverEnabled) {
+    if (this.serverEnabled && !this.targetTable) {
       try {
         const response = await fetch(this.serverOptions.api_url, {
           method: "GET",
@@ -223,7 +267,14 @@ class EasyTables {
     }
 
     this.currentPage = 1; // Reset to the first page when searching
-    this.updateTable();
+
+    if (this.targetTable) {
+      // If the target is a table, re-render the table
+      document.querySelector(".ezy-tables-container")!.innerHTML = "";
+      this.initTable();
+    } else {
+      this.updateTable();
+    }
   }
 
   // Search in a 2-dimensional array of strings
@@ -249,7 +300,15 @@ class EasyTables {
 
   public setPerPage(perPage: number): void {
     this.perPage = perPage;
-    this.updateTable(); // Update the table to reflect the change
+    this.currentPage = 1; // Reset to the first page when changing the per page value
+
+    if (this.targetTable) {
+      // If the target is a table, re-render the table
+      document.querySelector(".ezy-tables-container")!.innerHTML = "";
+      this.initTable();
+    } else {
+      this.updateTable(); // Update the table to reflect the change
+    }
   }
 
   // Pagination methods
@@ -263,7 +322,14 @@ class EasyTables {
   prevPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.updateTable(); // Trigger re-render on previous page
+
+      if (this.targetTable) {
+        // If the target is a table, re-render the table
+        document.querySelector(".ezy-tables-container")!.innerHTML = "";
+        this.initTable();
+      } else {
+        this.updateTable(); // Trigger re-render on previous page
+      }
     }
   }
 
@@ -317,6 +383,443 @@ class EasyTables {
   private async updateTable(): Promise<void> {
     if (this.renderFunction) {
       const data = await this.getData();
+      this.renderFunction(data);
+    } else if (this.targetTable) {
+      // If the target is a table, re-render the table
+      document.querySelector(".ezy-tables-container")!.innerHTML = "";
+      this.initTable();
+    }
+  }
+
+  // =============================================================
+  // ===================== Table Configuration =========================
+  // =============================================================
+
+  // Private method to get the existing table thead element and turn it into an array of columns
+  private getTableHead(): Column[] | null {
+    if (!this.targetTable) return null;
+
+    const thead = this.targetTable.querySelector("thead");
+
+    if (!thead) return null;
+
+    this.columns = Array.from(thead.querySelectorAll("th")).map(
+      (th: HTMLElement) => {
+        const column: Column = {
+          name:
+            th.getAttribute("data-name") ||
+            th.innerText.replace(/\s/g, "-").toLowerCase(),
+          label: th.getAttribute("data-label") || th.innerText,
+        };
+        return column;
+      }
+    );
+
+    return this.columns;
+  }
+
+  // Private method to get the existing table tbody element and turn it into an array of rows
+  private async getTableBody(): Promise<any[] | null> {
+    if (!this.targetTable) return null;
+
+    const tbody = this.targetTable.querySelector("tbody");
+
+    if (!tbody) return null;
+
+    this._data = Array.from(tbody.querySelectorAll("tr")).map(
+      (tr: HTMLElement) => {
+        // Check if the row data is an array or an object
+        if (Array.isArray(this._data[0])) {
+          // If it's an array, return an array of cell values
+          return Array.from(tr.querySelectorAll("td")).map(
+            (td: HTMLElement) => td.innerText
+          );
+        } else {
+          // If it's an object, return an object with properties data1, data2, etc.
+          const row: any = {};
+          Array.from(tr.querySelectorAll("td")).forEach(
+            (td: HTMLElement, index) => {
+              row[`${this.columns[index].name}`] = td.innerText;
+            }
+          );
+          return row;
+        }
+      }
+    );
+
+    return await this.getData();
+  }
+
+  // Private method to hide the existing table and display ezy-tables instead
+  private replaceTable(): void {
+    if (!this.targetTable) return;
+
+    let tableContainer;
+    let table;
+    // create the table container if it doesn't exist
+    if (!document.querySelector(".ezy-tables-container")) {
+      tableContainer = document.createElement("div");
+    } else {
+      tableContainer = document.querySelector(".ezy-tables-container")!;
+    }
+
+    if (!document.querySelector(".ezy-tables")) {
+      table = document.createElement("table");
+    } else {
+      table = document.querySelector(".ezy-tables")!;
+      table.innerHTML = "";
+    }
+
+    tableContainer.classList.add(
+      `ezy-tables-container`,
+      `ezy-tables-container-${
+        window.crypto.getRandomValues(new Uint32Array(1))[0]
+      }`
+    );
+
+    table.classList.add(
+      `ezy-tables`,
+      `ezy-tables-${window.crypto.getRandomValues(new Uint32Array(1))[0]}`
+    );
+
+    let thead;
+    let tbody;
+    let footer;
+    let header;
+    let footerInfo;
+    let footerButtons;
+
+    if (!document.querySelector(".ezy-tables thead")) {
+      thead = document.createElement("thead");
+    } else {
+      thead = document.querySelector(".ezy-tables thead")!;
+      thead.innerHTML = "";
+    }
+
+    if (!document.querySelector(".ezy-tables tbody")) {
+      tbody = document.createElement("tbody");
+    } else {
+      tbody = document.querySelector(".ezy-tables tbody")!;
+      tbody.innerHTML = "";
+    }
+
+    if (!document.querySelector(".ezy-tables-footer")) {
+      footer = document.createElement("div");
+    } else {
+      footer = document.querySelector(".ezy-tables-footer")!;
+      footer.innerHTML = "";
+    }
+
+    if (!document.querySelector(".ezy-tables-header")) {
+      header = document.createElement("div");
+    } else {
+      header = document.querySelector(".ezy-tables-header")!;
+      header.innerHTML = "";
+    }
+
+    if (!document.querySelector(".ezy-tables-footer-info")) {
+      footerInfo = document.createElement("div");
+    } else {
+      footerInfo = document.querySelector(".ezy-tables-footer-info")!;
+      footerInfo.innerHTML = "";
+    }
+
+    if (!document.querySelector(".ezy-tables-footer-buttons")) {
+      footerButtons = document.createElement("div");
+    } else {
+      footerButtons = document.querySelector(".ezy-tables-footer-buttons")!;
+      footerButtons.innerHTML = "";
+    }
+
+    header.classList.add("ezy-tables-header");
+
+    // add per page selector
+    const perPageContainer = document.createElement("div");
+    perPageContainer.classList.add("ezy-tables-per-page-container");
+
+    const perPageLabel = document.createElement("label");
+    perPageLabel.classList.add("ezy-tables-per-page-label");
+
+    const perPageLabelText = document.createElement("span");
+    perPageLabelText.classList.add("ezy-tables-per-page-label-text");
+    perPageLabelText.innerText = "Per page: ";
+
+    const perPageSelect = document.createElement("select");
+    perPageSelect.classList.add("ezy-tables-per-page-select");
+
+    const perPageOptions = [5, 10, 25, 50, 100];
+
+    perPageOptions.forEach(option => {
+      const perPageOption = document.createElement("option");
+      perPageOption.classList.add("ezy-tables-per-page-option");
+      perPageOption.innerText = String(option);
+      perPageOption.setAttribute("value", String(option));
+
+      if (option === this.perPage) {
+        perPageOption.setAttribute("selected", "selected");
+      }
+
+      perPageSelect.appendChild(perPageOption);
+    });
+
+    perPageSelect.addEventListener("change", (e: Event) => {
+      this.setPerPage(Number((e.target as HTMLSelectElement).value));
+    });
+
+    perPageLabel.appendChild(perPageLabelText);
+    perPageLabel.appendChild(perPageSelect);
+
+    perPageContainer.appendChild(perPageLabel);
+
+    // add search input
+    let searchContainer;
+    let searchInput: HTMLInputElement;
+
+    if (!document.querySelector(".ezy-tables-search-container")) {
+      searchContainer = document.createElement("div");
+      searchContainer.classList.add("ezy-tables-search-container");
+    } else {
+      searchContainer = document.querySelector(".ezy-tables-search-container")!;
+    }
+
+    if (!document.querySelector(".ezy-tables-search-input")) {
+      searchInput = document.createElement("input");
+      searchInput.classList.add("ezy-tables-search-input");
+      searchInput.setAttribute("type", "search");
+      searchInput.setAttribute("placeholder", "Search");
+    } else {
+      searchInput = document.querySelector(".ezy-tables-search-input")!;
+    }
+
+    if (searchInput) {
+      searchInput.value = this.searchQuery || "";
+    }
+
+    searchInput.addEventListener("input", (e: Event) => {
+      this.setSearchDebounced((e.target as HTMLInputElement).value);
+    });
+
+    searchContainer.appendChild(searchInput);
+
+    header.appendChild(perPageContainer);
+    header.appendChild(searchContainer);
+
+    footer.classList.add("ezy-tables-footer");
+    footerInfo.classList.add("ezy-tables-footer-info");
+    footerButtons.classList.add("ezy-tables-footer-buttons");
+
+    if (footerInfo) {
+      footerInfo.textContent = this.getShowingInfo() || "";
+    }
+
+    const prevButton = document.createElement("button");
+    prevButton.textContent = "Previous";
+    prevButton.classList.add("ezy-tables-footer-button");
+
+    prevButton.addEventListener("click", () => {
+      this.prevPage();
+    });
+
+    const nextButton = document.createElement("button");
+    nextButton.textContent = "Next";
+    nextButton.classList.add("ezy-tables-footer-button");
+
+    nextButton.addEventListener("click", () => {
+      this.nextPage();
+    });
+
+    footerButtons.appendChild(prevButton);
+    footerButtons.appendChild(nextButton);
+
+    footer.appendChild(footerInfo);
+    footer.appendChild(footerButtons);
+
+    table.appendChild(thead);
+    table.appendChild(tbody);
+
+    tableContainer.appendChild(header);
+    tableContainer.appendChild(table);
+    tableContainer.appendChild(footer);
+
+    this.targetTable.parentNode?.insertBefore(tableContainer, this.targetTable);
+
+    this.targetTable.style.display = "none";
+  }
+
+  // Private method to render the table header
+  private renderTableHeader(columns: any): void {
+    if (!this.targetTable) return;
+
+    // get the new table thead element
+    const thead = document.querySelector(".ezy-tables thead");
+
+    if (!thead) return;
+
+    columns.forEach((column: any) => {
+      const th = document.createElement("th");
+      th.setAttribute("data-name", column.name);
+      th.setAttribute("data-label", column.label);
+      th.innerText = column.label;
+      thead.appendChild(th);
+    });
+  }
+
+  // Private method to render the table body
+  private renderTableBody(data: any): void {
+    if (!this.targetTable) return;
+
+    const tbody = document.querySelector(".ezy-tables tbody");
+
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+    data.forEach((row: any[] | object) => {
+      const tr = document.createElement("tr");
+
+      // Check if row is an array or an object
+      const values = Array.isArray(row) ? row : Object.values(row);
+
+      values.forEach(value => {
+        const td = document.createElement("td");
+        td.innerText = String(value);
+        tr.appendChild(td);
+      });
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Private method to render table container and data
+  private async renderTable(data: any): Promise<void> {
+    if (!this.targetTable) return;
+
+    // get the existing table thead element and turn it into an array of columns
+    const columns = this.getTableHead();
+
+    // get the existing table tbody element and turn it into an array of rows
+    if (!data || data.length === 0) {
+      data = await this.getTableBody();
+    }
+    const rows = data;
+
+    if (!columns || !rows) return;
+
+    // this._data = rows;
+
+    this.replaceTable();
+    this.renderTableHeader(columns);
+    this.renderTableBody(rows);
+  }
+
+  private addStyles() {
+    // add the styles
+    const style = document.createElement("style");
+    style.innerHTML = `
+      .ezy-tables-container {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+      }
+      .ezy-tables {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      .ezy-tables thead th {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      .ezy-tables tbody td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      .ezy-tables-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px;
+      }
+      .ezy-tables-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px;
+      }
+      .ezy-tables-footer-info {
+        font-size: 14px;
+      }
+      .ezy-tables-footer-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+      .ezy-tables-footer-button {
+        border: 1px solid #ddd;
+        padding: 8px;
+        border-radius: 4px;
+        background-color: #fff;
+        cursor: pointer;
+      }
+      .ezy-tables-footer-button:hover {
+        background-color: #ddd;
+      }
+      .ezy-tables-per-page-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .ezy-tables-per-page-label {
+        font-size: 14px;
+      }
+      .ezy-tables-per-page-label-text {
+        margin-right: 4px;
+      }
+      .ezy-tables-per-page-select {
+        border: 1px solid #ddd;
+        padding: 8px;
+        border-radius: 4px;
+        background-color: #fff;
+        cursor: pointer;
+      }
+      .ezy-tables-per-page-select:hover {
+        background-color: #ddd;
+      }
+      .ezy-tables-search-container {
+        margin-left: 8px;
+      }
+      .ezy-tables-search-input {
+        border: 1px solid #ddd;
+        padding: 8px;
+        border-radius: 4px;
+        background-color: #fff;
+        cursor: pointer;
+      }
+      .ezy-tables-search-input:hover {
+        background-color: #ddd;
+      }
+      // add media query for mobile
+      @media only screen and (max-width: 600px) {
+        .ezy-tables-container {
+          overflow-x: scroll;
+        }
+      }
+      `;
+
+    // put it in the document head
+    document.head.appendChild(style);
+  }
+
+  private async initTable() {
+    const data = await this.getData();
+
+    if (this.targetTable) {
+      this.renderTable(data);
+    }
+
+    if (this.renderFunction) {
       this.renderFunction(data);
     }
   }
