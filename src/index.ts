@@ -77,7 +77,8 @@ class EasyTables {
   };
 
   constructor(opts: EasyTablesOptions) {
-    this.serverEnabled = !opts.clientEnabled;
+    this.serverEnabled =
+      !opts.clientEnabled || !(opts.target && opts.target?.length > 0);
     if (
       opts.clientEnabled ||
       (opts.target && opts.data && opts.data?.length > 0)
@@ -138,6 +139,7 @@ class EasyTables {
       // 2-dimensional array of strings
       return this.searchInTwoDimensionalArray(this._data, this.searchQuery);
     } else if (typeof this._data[0] === "object") {
+      console.log("Day loser won", this._data);
       // Array of objects
       return this.searchInArrayOfObjects(this._data, this.searchQuery);
     } else {
@@ -267,6 +269,9 @@ class EasyTables {
 
     if (query.length === 0) {
       this.dataMode = DataMode.Paginated;
+      this.searchQuery = "";
+
+      console.log({ query, data: this._data });
     }
 
     this.currentPage = 1; // Reset to the first page when searching
@@ -275,7 +280,9 @@ class EasyTables {
       // If the target is a table, re-render the table
       document.querySelector(".ezy-tables-container")!.innerHTML = "";
       this.initTable();
-    } else {
+    }
+
+    if (this.renderFunction) {
       this.updateTable();
     }
   }
@@ -292,13 +299,19 @@ class EasyTables {
 
   // Search in an array of objects
   private searchInArrayOfObjects(data: object[], query: string): object[] {
-    return data.filter(item =>
+    const cloneData = [].concat(data as any);
+
+    const result = cloneData.filter(item =>
       Object.values(item).some(
         value =>
           typeof value === "string" &&
           value.toLowerCase().includes(query.toLowerCase())
       )
     );
+
+    console.log({ result, data });
+
+    return result;
   }
 
   public setPerPage(perPage: number): void {
@@ -701,6 +714,7 @@ class EasyTables {
 
     // get the existing table tbody element and turn it into an array of rows
     if (!data || data.length === 0) {
+      console.log("We have entered the bridge: ", data);
       data = await this.getTableBody();
     }
     const rows = data;
@@ -817,6 +831,8 @@ class EasyTables {
 
   private async initTable() {
     const data = await this.getData();
+
+    console.log("Pressuring: ", data);
 
     if (this.targetTable) {
       this.renderTable(data);
