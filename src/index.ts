@@ -78,7 +78,10 @@ class EasyTables {
 
   constructor(opts: EasyTablesOptions) {
     this.serverEnabled = !opts.clientEnabled;
-    if (opts.clientEnabled) {
+    if (
+      opts.clientEnabled ||
+      (opts.target && opts.data && opts.data?.length > 0)
+    ) {
       this._data = new Proxy(opts.data || [], {
         set: (target: any, key: string, value) => {
           target[key] = value;
