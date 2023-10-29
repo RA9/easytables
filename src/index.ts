@@ -790,6 +790,8 @@ class EasyTables {
         border: 1px solid #ddd;
         padding: 8px;
         text-align: left;
+        white-space: normal;
+        width: 1%;
       }
       .ezy-tables-header {
         display: flex;
