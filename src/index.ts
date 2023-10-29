@@ -841,8 +841,6 @@ class EasyTables {
   private async initTable() {
     const data = await this.getData();
 
-    console.log("Pressuring: ", data);
-
     if (this.targetTable) {
       this.renderTable(data);
     }
