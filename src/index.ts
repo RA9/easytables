@@ -139,7 +139,6 @@ class EasyTables {
       // 2-dimensional array of strings
       return this.searchInTwoDimensionalArray(this._data, this.searchQuery);
     } else if (typeof this._data[0] === "object") {
-      console.log("Day loser won", this._data);
       // Array of objects
       return this.searchInArrayOfObjects(this._data, this.searchQuery);
     } else {
@@ -205,7 +204,7 @@ class EasyTables {
         return [];
       }
     } else {
-      let dataToUse = this._data;
+      let dataToUse = [].concat(this._data as any);
 
       if (this.dataMode === DataMode.Filtered) {
         dataToUse = this.filterData() as any;
@@ -270,8 +269,6 @@ class EasyTables {
     if (query.length === 0) {
       this.dataMode = DataMode.Paginated;
       this.searchQuery = "";
-
-      console.log({ query, data: this._data });
     }
 
     this.currentPage = 1; // Reset to the first page when searching
@@ -308,9 +305,6 @@ class EasyTables {
           value.toLowerCase().includes(query.toLowerCase())
       )
     );
-
-    console.log({ result, data });
-
     return result;
   }
 
@@ -689,20 +683,35 @@ class EasyTables {
     if (!tbody) return;
 
     tbody.innerHTML = "";
-    data.forEach((row: any[] | object) => {
+    if (data.length === 0) {
       const tr = document.createElement("tr");
+      const td = document.createElement("td");
 
-      // Check if row is an array or an object
-      const values = Array.isArray(row) ? row : Object.values(row);
+      td.setAttribute("colspan", String(this.columns.length));
+      td.style.textAlign = "center";
+      td.textContent =
+        this.dataMode == DataMode.Filtered
+          ? "No data was found!"
+          : "No data available!";
 
-      values.forEach(value => {
-        const td = document.createElement("td");
-        td.innerText = String(value);
-        tr.appendChild(td);
-      });
-
+      tr.appendChild(td);
       tbody.appendChild(tr);
-    });
+    } else {
+      data.forEach((row: any[] | object) => {
+        const tr = document.createElement("tr");
+
+        // Check if row is an array or an object
+        const values = Array.isArray(row) ? row : Object.values(row);
+
+        values.forEach(value => {
+          const td = document.createElement("td");
+          td.innerText = String(value);
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+    }
   }
 
   // Private method to render table container and data
@@ -710,11 +719,11 @@ class EasyTables {
     if (!this.targetTable) return;
 
     // get the existing table thead element and turn it into an array of columns
-    const columns = this.getTableHead();
+    const columns =
+      this.columns.length > 0 ? this.columns : this.getTableHead();
 
     // get the existing table tbody element and turn it into an array of rows
-    if (!data || data.length === 0) {
-      console.log("We have entered the bridge: ", data);
+    if (!this._data || this._data.length === 0) {
       data = await this.getTableBody();
     }
     const rows = data;
