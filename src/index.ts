@@ -11,6 +11,12 @@ interface Column {
   func?: (data: any, row: any) => string;
 }
 
+interface Plugin {
+  name: string;
+  field: string | string[];
+  transform: (data: any) => string;
+}
+
 interface EasyTablesOptions {
   clientEnabled?: boolean; // Enable or disable client-side data fetching (default: true)
   data?: string[]; // Data source (only for client-side)
@@ -61,6 +67,8 @@ class EasyTables {
     page: number;
     dataNames: string[];
   };
+
+  private plugins: Plugin[] = [];
 
   // private searchText: string = "";
 
@@ -129,6 +137,10 @@ class EasyTables {
     if (this.renderFunction) {
       this.updateTable();
     }
+  }
+
+  public registerPlugin(plugin: Plugin): void {
+    this.plugins.push(plugin);
   }
 
   // Private method to filter data based on search query
@@ -701,11 +713,26 @@ class EasyTables {
         const tr = document.createElement("tr");
 
         // Check if row is an array or an object
-        const values = Array.isArray(row) ? row : Object.values(row);
+        const isRowArray = Array.isArray(row);
+        const values = isRowArray ? row : Object.values(row);
+        const keys = isRowArray
+          ? values.map((_, index) => `data${index + 1}`)
+          : Object.keys(row);
 
-        values.forEach(value => {
+        values.forEach((value, index) => {
           const td = document.createElement("td");
-          td.innerText = String(value);
+
+          // Apply plugins
+          this.plugins.forEach(plugin => {
+            const fields = Array.isArray(plugin.field)
+              ? plugin.field
+              : [plugin.field];
+            if (fields.includes(keys[index])) {
+              value = plugin.transform(value);
+            }
+          });
+
+          td.innerHTML = String(value);
           tr.appendChild(td);
         });
 
