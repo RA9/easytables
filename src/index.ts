@@ -45,6 +45,7 @@ interface EasyTablesOptions {
       input?: string;
     };
   };
+  plugins: Plugin[];
 }
 
 enum DataMode {
@@ -101,6 +102,8 @@ class EasyTables {
         },
       });
     }
+
+    this.plugins = opts?.plugins || [];
 
     this.client = {
       limit: opts.client?.limit || 10,
