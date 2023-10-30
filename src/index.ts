@@ -791,7 +791,9 @@ class EasyTables {
         padding: 8px;
         text-align: left;
         white-space: normal;
-        width: 1%;
+        width: auto;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
       }
       .ezy-tables-header {
         display: flex;
