@@ -24,14 +24,12 @@ interface Classes {
     header?: string;
     thead?: {
       container?: string;
-      tr: {
-        container?: string;
-        th?: string;
-      };
+      th?: string;
     };
     tbody?: {
       container?: string;
-      element?: string;
+      tr?: string;
+      td?: string;
     };
     footer?: {
       container?: string;
@@ -823,8 +821,8 @@ class EasyTables {
       th.setAttribute("data-label", column.label);
       th.innerText = column.label;
       // add th classes if exists
-      if (this.htmlClasses?.table?.thead?.tr?.th) {
-        const classes = this.htmlClasses.table.thead.tr.th.split(" ");
+      if (this.htmlClasses?.table?.thead?.th) {
+        const classes = this.htmlClasses.table.thead.th.split(" ");
         th.classList.add(...classes);
       }
 
@@ -846,6 +844,20 @@ class EasyTables {
     if (data.length === 0) {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
+
+      if (this.htmlClasses?.table?.tbody?.tr) {
+        // console.log({ tbody }, this.htmlClasses.table.tbody.container)
+        const classes = this.htmlClasses.table.tbody.tr.split(" ");
+        tr.classList.add(...classes);
+        // tbody.classList.remove("ezy-tables tbody");
+      }
+
+      if (this.htmlClasses?.table?.tbody?.td) {
+        // console.log({ tbody }, this.htmlClasses.table.tbody.container)
+        const classes = this.htmlClasses.table.tbody.td.split(" ");
+        td.classList.add(...classes);
+        // tbody.classList.remove("ezy-tables tbody");
+      }
 
       td.setAttribute("colspan", String(this.columns.length));
       td.style.textAlign = "center";
@@ -879,6 +891,18 @@ class EasyTables {
               value = plugin.transform(value);
             }
           });
+
+          if (this.htmlClasses?.table?.tbody?.tr) {
+            const classes = this.htmlClasses.table.tbody.tr.split(" ");
+            tr.classList.add(...classes);
+          }
+
+          if (this.htmlClasses?.table?.tbody?.td) {
+            // console.log({ tbody }, this.htmlClasses.table.tbody.container)
+            const classes = this.htmlClasses.table.tbody.td.split(" ");
+            td.classList.add(...classes);
+            // tbody.classList.remove("ezy-tables tbody");
+          }
 
           td.innerHTML = String(value);
           tr.appendChild(td);
