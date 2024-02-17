@@ -17,6 +17,34 @@ interface Plugin {
   transform: (data: any) => string;
 }
 
+interface Classes {
+  container?: string;
+  table?: {
+    container?: string;
+    header?: string;
+    thead?: {
+      container?: string;
+      tr: {
+        container?: string;
+        th?: string;
+      };
+    };
+    tbody?: {
+      container?: string;
+      element?: string;
+    };
+    footer?: {
+      container?: string;
+      footerInfo?: string;
+      footerButtons?: string;
+    };
+  };
+  search?: {
+    container?: string;
+    input?: string;
+  };
+}
+
 interface EasyTablesOptions {
   clientEnabled?: boolean; // Enable or disable client-side data fetching (default: true)
   data?: string[]; // Data source (only for client-side)
@@ -35,16 +63,7 @@ interface EasyTablesOptions {
   target?: string; // Target element selector for custom rendering,
   columns?: Column[]; // Column names for client-side data
   rows?: any[]; // Rows for client-side data
-  classes?: {
-    container?: string;
-    table?: string;
-    thead?: string;
-    tbody?: string;
-    search?: {
-      container?: string;
-      input?: string;
-    };
-  };
+  classes?: Classes;
   plugins: Plugin[];
 }
 
@@ -61,6 +80,7 @@ class EasyTables {
   private renderFunction?: (data: string[]) => void;
   private serverEnabled: boolean;
   private dataMode: string = DataMode.Paginated;
+  private htmlClasses: Classes = {};
   private serverOptions: {
     api_url: string;
     headers?: Record<string, string>;
@@ -68,6 +88,8 @@ class EasyTables {
     page: number;
     dataNames: string[];
   };
+
+  private dynamicClasses: any = {};
 
   private plugins: Plugin[] = [];
 
@@ -102,6 +124,17 @@ class EasyTables {
         },
       });
     }
+
+    this.htmlClasses = opts.classes || {};
+    const randomId = window.crypto.getRandomValues(new Uint32Array(1))[0];
+    this.dynamicClasses = {
+      "ezy-tables": `ezy-tables-${randomId}`,
+      "ezy-tables-container": `ezy-tables-container-${randomId}`,
+      "ezy-tables-header": `ezy-tables-header-${randomId}`,
+      "ezy-tables-footer": `ezy-tables-footer-${randomId}`,
+      "ezy-tables-footer-info": `ezy-tables-footer-info-${randomId}`,
+      "ezy-tables-footer-buttons": `ezy-tables-footer-buttons-${randomId}`,
+    };
 
     this.plugins = opts?.plugins || [];
 
@@ -290,7 +323,9 @@ class EasyTables {
 
     if (this.targetTable) {
       // If the target is a table, re-render the table
-      document.querySelector(".ezy-tables-container")!.innerHTML = "";
+      document.querySelector(
+        `.${this.dynamicClasses["ezy-tables-container"]}`
+      )!.innerHTML = "";
       this.initTable();
     }
 
@@ -329,7 +364,9 @@ class EasyTables {
 
     if (this.targetTable) {
       // If the target is a table, re-render the table
-      document.querySelector(".ezy-tables-container")!.innerHTML = "";
+      document.querySelector(
+        `.${this.dynamicClasses["ezy-tables-container"]}`
+      )!.innerHTML = "";
       this.initTable();
     } else {
       this.updateTable(); // Update the table to reflect the change
@@ -350,7 +387,9 @@ class EasyTables {
 
       if (this.targetTable) {
         // If the target is a table, re-render the table
-        document.querySelector(".ezy-tables-container")!.innerHTML = "";
+        document.querySelector(
+          `.${this.dynamicClasses["ezy-tables-container"]}`
+        )!.innerHTML = "";
         this.initTable();
       } else {
         this.updateTable(); // Trigger re-render on previous page
@@ -411,7 +450,9 @@ class EasyTables {
       this.renderFunction(data);
     } else if (this.targetTable) {
       // If the target is a table, re-render the table
-      document.querySelector(".ezy-tables-container")!.innerHTML = "";
+      document.querySelector(
+        `.${this.dynamicClasses["ezy-tables-container"]}`
+      )!.innerHTML = "";
       this.initTable();
     }
   }
@@ -425,6 +466,8 @@ class EasyTables {
     if (!this.targetTable) return null;
 
     const thead = this.targetTable.querySelector("thead");
+
+    // console.log(thead, this.targetTable.querySelector("thead"))
 
     if (!thead) return null;
 
@@ -482,30 +525,45 @@ class EasyTables {
     let tableContainer;
     let table;
     // create the table container if it doesn't exist
-    if (!document.querySelector(".ezy-tables-container")) {
+    if (
+      !document.querySelector(`.${this.dynamicClasses["ezy-tables-container"]}`)
+    ) {
       tableContainer = document.createElement("div");
     } else {
-      tableContainer = document.querySelector(".ezy-tables-container")!;
+      tableContainer = document.querySelector(
+        `.${this.dynamicClasses["ezy-tables-container"]}`
+      )!;
     }
 
-    if (!document.querySelector(".ezy-tables")) {
+    // create the table if it doesn't exist
+    if (!document.querySelector(`.${this.dynamicClasses["ezy-tables"]}`)) {
       table = document.createElement("table");
     } else {
-      table = document.querySelector(".ezy-tables")!;
+      table = document.querySelector(`.${this.dynamicClasses["ezy-tables"]}`)!;
       table.innerHTML = "";
     }
 
+    // add classes to a table container
     tableContainer.classList.add(
       `ezy-tables-container`,
-      `ezy-tables-container-${
-        window.crypto.getRandomValues(new Uint32Array(1))[0]
-      }`
+      this.dynamicClasses["ezy-tables-container"]
     );
 
-    table.classList.add(
-      `ezy-tables`,
-      `ezy-tables-${window.crypto.getRandomValues(new Uint32Array(1))[0]}`
-    );
+    // add table container classes if exists
+    if (this.htmlClasses.container) {
+      const classes = this.htmlClasses.container.split(" ");
+      tableContainer.classList.add(...classes);
+      tableContainer.classList.remove("ezy-tables-container");
+    }
+
+    table.classList.add(`ezy-tables`, this.dynamicClasses["ezy-tables"]);
+
+    // add table classes if exists
+    if (this.htmlClasses.table?.container) {
+      const classes = this.htmlClasses.table.container.split(" ");
+      table.classList.add(...classes);
+      table.classList.remove("ezy-tables");
+    }
 
     let thead;
     let tbody;
@@ -514,18 +572,41 @@ class EasyTables {
     let footerInfo;
     let footerButtons;
 
-    if (!document.querySelector(".ezy-tables thead")) {
+    if (
+      !document.querySelector(`.${this.dynamicClasses["ezy-tables"]} thead`)
+    ) {
       thead = document.createElement("thead");
     } else {
-      thead = document.querySelector(".ezy-tables thead")!;
+      thead = document.querySelector(
+        `.${this.dynamicClasses["ezy-tables"]} thead`
+      )!;
       thead.innerHTML = "";
     }
 
-    if (!document.querySelector(".ezy-tables tbody")) {
+    // add thead classes if exists
+    if (this.htmlClasses?.table?.thead?.container) {
+      const classes = this.htmlClasses.table.thead.container.split(" ");
+      thead.classList.add(...classes);
+      thead.classList.remove("ezy-tables");
+    }
+
+    if (
+      !document.querySelector(`.${this.dynamicClasses["ezy-tables"]} tbody`)
+    ) {
       tbody = document.createElement("tbody");
     } else {
-      tbody = document.querySelector(".ezy-tables tbody")!;
+      tbody = document.querySelector(
+        `.${this.dynamicClasses["ezy-tables"]} tbody`
+      )!;
       tbody.innerHTML = "";
+    }
+
+    // add tbody classes if exists
+    if (this.htmlClasses?.table?.tbody?.container) {
+      // console.log({ tbody }, this.htmlClasses.table.tbody.container)
+      const classes = this.htmlClasses.table.tbody.container.split(" ");
+      tbody.classList.add(...classes);
+      // tbody.classList.remove("ezy-tables tbody");
     }
 
     if (!document.querySelector(".ezy-tables-footer")) {
@@ -535,12 +616,30 @@ class EasyTables {
       footer.innerHTML = "";
     }
 
-    if (!document.querySelector(".ezy-tables-header")) {
+    // add footer classes if exists
+    // if (this.htmlClasses.footer) {
+    //   const classes = this.htmlClasses.footer.split(" ");
+    //   footer.classList.add(...classes);
+    //   footer.classList.remove("ezy-tables-footer");
+    // }
+
+    if (
+      !document.querySelector(`.${this.dynamicClasses["ezy-tables-header"]}`)
+    ) {
       header = document.createElement("div");
     } else {
-      header = document.querySelector(".ezy-tables-header")!;
+      header = document.querySelector(
+        `.${this.dynamicClasses["ezy-tables-header"]}`
+      )!;
       header.innerHTML = "";
     }
+
+    // add header classes if exists
+    // if (this.htmlClasses.header) {
+    //   const classes = this.htmlClasses.header.split(" ");
+    //   header.classList.add(...classes);
+    //   header.classList.remove("ezy-tables-header");
+    // }
 
     if (!document.querySelector(".ezy-tables-footer-info")) {
       footerInfo = document.createElement("div");
@@ -549,6 +648,13 @@ class EasyTables {
       footerInfo.innerHTML = "";
     }
 
+    // add footer info classes if exists
+    // if (this.htmlClasses.footerInfo) {
+    //   const classes = this.htmlClasses.footerInfo.split(" ");
+    //   footerInfo.classList.add(...classes);
+    //   footerInfo.classList.remove("ezy-tables-footer-info");
+    // }
+
     if (!document.querySelector(".ezy-tables-footer-buttons")) {
       footerButtons = document.createElement("div");
     } else {
@@ -556,7 +662,24 @@ class EasyTables {
       footerButtons.innerHTML = "";
     }
 
-    header.classList.add("ezy-tables-header");
+    // add footer buttons classes if exists
+    // if (this.htmlClasses.footerButtons) {
+    //   const classes = this.htmlClasses.footerButtons.split(" ");
+    //   footerButtons.classList.add(...classes);
+    //   footerButtons.classList.remove("ezy-tables-footer-buttons");
+    // }
+
+    header.classList.add(
+      "ezy-tables-header",
+      this.dynamicClasses["ezy-tables-header"]
+    );
+
+    //  add header classes if exists
+    // if (this.htmlClasses.header) {
+    //   const classes = this.htmlClasses.header.split(" ");
+    //   header.classList.add(...classes);
+    //   header.classList.remove("ezy-tables-header");
+    // }
 
     // add per page selector
     const perPageContainer = document.createElement("div");
@@ -618,10 +741,14 @@ class EasyTables {
 
     if (searchInput) {
       searchInput.value = this.searchQuery || "";
+      if (this.searchQuery) {
+        searchInput.focus();
+      }
     }
 
     searchInput.addEventListener("input", (e: Event) => {
       this.setSearchDebounced((e.target as HTMLInputElement).value);
+      (e.target as HTMLInputElement).focus();
     });
 
     searchContainer.appendChild(searchInput);
@@ -676,7 +803,17 @@ class EasyTables {
     if (!this.targetTable) return;
 
     // get the new table thead element
-    const thead = document.querySelector(".ezy-tables thead");
+    const thead = document.querySelector(
+      `.${this.dynamicClasses["ezy-tables"]} thead`
+    );
+
+    // add thead classes if exists
+    if (this.htmlClasses?.table?.thead?.container) {
+      // console.log(this.htmlClasses.table.thead.container, thead);
+      const classes = this.htmlClasses.table.thead.container.split(" ");
+      thead?.classList.add(...classes);
+      // thead?.classList.remove("ezy-tables thead");
+    }
 
     if (!thead) return;
 
@@ -685,6 +822,12 @@ class EasyTables {
       th.setAttribute("data-name", column.name);
       th.setAttribute("data-label", column.label);
       th.innerText = column.label;
+      // add th classes if exists
+      if (this.htmlClasses?.table?.thead?.tr?.th) {
+        const classes = this.htmlClasses.table.thead.tr.th.split(" ");
+        th.classList.add(...classes);
+      }
+
       thead.appendChild(th);
     });
   }
@@ -693,7 +836,9 @@ class EasyTables {
   private renderTableBody(data: any): void {
     if (!this.targetTable) return;
 
-    const tbody = document.querySelector(".ezy-tables tbody");
+    const tbody = document.querySelector(
+      `.${this.dynamicClasses["ezy-tables"]} tbody`
+    );
 
     if (!tbody) return;
 
@@ -759,8 +904,6 @@ class EasyTables {
     const rows = data;
 
     if (!columns || !rows) return;
-
-    // this._data = rows;
 
     this.replaceTable();
     this.renderTableHeader(columns);

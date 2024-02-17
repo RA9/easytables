@@ -4,10 +4,99 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
+    <title>EzyTable Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
+
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/index.ts"></script>
+    <div id="app">
+      <table id="ezy-table">
+        <thead>
+          <tr>
+            <th data-name="name" data-label="Name"></th>
+            <th data-name="description" data-label="Description"></th>
+            <th data-name="status" data-label="Status"></th>
+            <th data-name="date" data-label="Date"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <script type="module">
+      import { EzyTables } from "./src/index.ts";
+
+      const data = [
+        {
+          name: "John Brown",
+          description:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, vitae aliquam nisl nunc eu nisi. Sed vitae nisl eget nisl aliquam aliquet. Sed vitae nisl eget nisl aliquam aliquet.",
+          status: "Active",
+          date: "2020-01-01",
+        },
+        {
+          name: "Jane Abram",
+          description:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, vitae aliquam nisl nunc eu nisi. Sed vitae nisl eget nisl aliquam aliquet. Sed vitae nisl eget nisl aliquam aliquet.",
+          status: "Active",
+          date: "2022-01-01",
+        },
+        {
+          name: "Sam Smith",
+          description:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, vitae aliquam nisl nunc eu nisi. Sed vitae nisl eget nisl aliquam aliquet. Sed vitae nisl eget nisl aliquam aliquet.",
+          status: "Active",
+          date: "2024-01-01",
+        },
+        {
+          name: "Ekaterina Tankova",
+          description:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, vitae aliquam nisl nunc eu nisi. Sed vitae nisl eget nisl aliquam aliquet. Sed vitae nisl eget nisl aliquam aliquet.",
+          status: "Active",
+          date: "2023-01-01",
+        },
+        {
+          name: "Luisa Hanes",
+          description:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, vitae aliquam nisl nunc eu nisi. Sed vitae nisl eget nisl aliquam aliquet. Sed vitae nisl eget nisl aliquam aliquet.",
+          status: "Active",
+          date: "2020-01-01",
+        },
+      ];
+
+      const dateFormatPlugin = {
+        name: "dateFormat",
+        field: "date",
+        transform: dateString => {
+          const date = new Date(dateString);
+          return date.toLocaleDateString("en-US", {
+            weekday: "short",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+        },
+      };
+
+      const easyTable = new EzyTables({
+        target: "#ezy-table",
+        classes: {
+          container: "max-w-6xl bg-gray-100 shadow rounded-lg p-4 mx-auto my-8",
+          table: {
+            container: "min-w-full divide-y divide-gray-300",
+            thead: {
+              container: "bg-gray-50",
+              th: "py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900",
+            },
+            tbody: {
+              container: "divide-y divide-gray-200 bg-white",
+              tr: "",
+              td: "whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6",
+            },
+          },
+        },
+        data,
+        plugins: [dateFormatPlugin],
+      });
+    </script>
   </body>
 </html>
