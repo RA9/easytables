@@ -925,7 +925,7 @@ class EasyTables {
               ? plugin.field
               : [plugin.field];
             if (fields.includes(keys[index])) {
-              value = plugin.transform(value);
+              value = plugin.transform(value, tr);
             }
           });
 
@@ -941,7 +941,7 @@ class EasyTables {
             // tbody.classList.remove("ezy-tables tbody");
           }
 
-          td.innerHTML = String(value);
+          td.innerHTML = value;
           tr.appendChild(td);
         });
 
