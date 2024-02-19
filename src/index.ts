@@ -477,8 +477,8 @@ class EasyTables {
         const column: Column = {
           name:
             th.getAttribute("data-name") ||
-            th.innerText.replace(/\s/g, "-").toLowerCase(),
-          label: th.getAttribute("data-label") || th.innerText,
+            th.innerHTML.replace(/\s/g, "-").toLowerCase(),
+          label: th.getAttribute("data-label") || th.innerHTML,
         };
         return column;
       }
@@ -501,14 +501,14 @@ class EasyTables {
         if (Array.isArray(this._data[0])) {
           // If it's an array, return an array of cell values
           return Array.from(tr.querySelectorAll("td")).map(
-            (td: HTMLElement) => td.innerText
+            (td: HTMLElement) => td.innerHTML
           );
         } else {
           // If it's an object, return an object with properties data1, data2, etc.
           const row: any = {};
           Array.from(tr.querySelectorAll("td")).forEach(
             (td: HTMLElement, index) => {
-              row[`${this.columns[index].name}`] = td.innerText;
+              row[`${this.columns[index].name}`] = td.innerHTML;
             }
           );
           return row;
@@ -856,7 +856,7 @@ class EasyTables {
       const th = document.createElement("th");
       th.setAttribute("data-name", column.name);
       th.setAttribute("data-label", column.label);
-      th.innerText = column.label;
+      th.innerHTML = column.label;
       // add th classes if exists
       if (this.htmlClasses?.table?.thead?.th) {
         const classes = this.htmlClasses.table.thead.th.split(" ");
