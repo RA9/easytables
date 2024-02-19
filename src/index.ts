@@ -14,7 +14,7 @@ interface Column {
 interface Plugin {
   name: string;
   field: string | string[];
-  transform: (data: any) => string;
+  transform: (data: any, element?: any, parentElement?: any) => string;
 }
 
 interface Classes {
