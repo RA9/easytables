@@ -925,7 +925,7 @@ class EasyTables {
               ? plugin.field
               : [plugin.field];
             if (fields.includes(keys[index])) {
-              value = plugin.transform(value, tr);
+              value = plugin.transform(value, td, tr);
             }
           });
 
