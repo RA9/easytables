@@ -107,7 +107,8 @@ class EasyTables {
 
   constructor(opts: EasyTablesOptions) {
     this.serverEnabled =
-      !opts.clientEnabled || !(opts.target && opts.target?.length > 0);
+      opts.target && opts.target?.length > 0 ? false : !opts.clientEnabled;
+
     if (
       opts.clientEnabled ||
       (opts.target && opts.data && opts.data?.length > 0)
