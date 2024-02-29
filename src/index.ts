@@ -62,7 +62,7 @@ interface EasyTablesOptions {
   columns?: Column[]; // Column names for client-side data
   rows?: any[]; // Rows for client-side data
   classes?: Classes;
-  plugins: Plugin[];
+  plugins?: Plugin[];
 }
 
 enum DataMode {
