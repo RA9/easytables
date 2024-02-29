@@ -45,7 +45,7 @@ interface Classes {
 
 interface EasyTablesOptions {
   clientEnabled?: boolean; // Enable or disable client-side data fetching (default: true)
-  data?: string[]; // Data source (only for client-side)
+  data?: any[]; // Data source (only for client-side)
   server?: {
     api_url: string; // API URL for server-side data fetching
     headers?: Record<string, string>; // Optional headers for server-side data fetching
