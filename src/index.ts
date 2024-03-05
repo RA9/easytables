@@ -803,6 +803,8 @@ class EasyTables {
       tableContainer.appendChild(header);
     }
 
+    tableContainer.appendChild(table);
+
     if (!this.hideDetails.footer) {
       if (
         !document.querySelector(
@@ -860,13 +862,11 @@ class EasyTables {
       footer.appendChild(footerInfo);
       footer.appendChild(footerButtons);
 
-      table.appendChild(thead);
-      table.appendChild(tbody);
-
       tableContainer.appendChild(footer);
     }
 
-    tableContainer.appendChild(table);
+    table.appendChild(thead);
+    table.appendChild(tbody);
 
     this.targetTable.parentNode?.insertBefore(tableContainer, this.targetTable);
 
@@ -914,6 +914,8 @@ class EasyTables {
     const tbody = document.querySelector(
       `.${this.dynamicClasses["ezy-tables"]} tbody`
     );
+
+    console.log({ tbody }, this.dynamicClasses["ezy-tables"]);
 
     if (!tbody) return;
 
