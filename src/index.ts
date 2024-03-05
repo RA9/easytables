@@ -102,7 +102,10 @@ class EasyTables {
   private hideDetails: {
     header?: boolean;
     footer?: boolean;
-  } = {};
+  } = {
+    footer: false,
+    header: false,
+  };
   private dynamicClasses: any = {};
 
   private plugins: Plugin[] = [];
@@ -647,7 +650,7 @@ class EasyTables {
     //   footer.classList.remove("ezy-tables-footer");
     // }
 
-    if (this.hideDetails.header) {
+    if (!this.hideDetails.header) {
       if (
         !document.querySelector(`.${this.dynamicClasses["ezy-tables-header"]}`)
       ) {
@@ -800,7 +803,7 @@ class EasyTables {
       tableContainer.appendChild(header);
     }
 
-    if (this.hideDetails.footer) {
+    if (!this.hideDetails.footer) {
       if (
         !document.querySelector(
           `.${this.dynamicClasses["ezy-tables-footer-info"]}`
