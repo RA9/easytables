@@ -37,9 +37,17 @@ interface Classes {
       footerButtons?: string;
     };
   };
-  search?: {
+  header?: {
     container?: string;
-    input?: string;
+    perPageContainer?: {
+      container?: string;
+      label?: string;
+      select?: string;
+    };
+    search?: {
+      container?: string;
+      input?: string;
+    };
   };
 }
 
@@ -633,6 +641,10 @@ class EasyTables {
       !document.querySelector(`.${this.dynamicClasses["ezy-tables-header"]}`)
     ) {
       header = document.createElement("div");
+      header.classList.add(
+        "ezy-tables-header",
+        this.dynamicClasses["ezy-tables-header"]
+      );
     } else {
       header = document.querySelector(
         `.${this.dynamicClasses["ezy-tables-header"]}`
@@ -641,11 +653,11 @@ class EasyTables {
     }
 
     // add header classes if exists
-    // if (this.htmlClasses.header) {
-    //   const classes = this.htmlClasses.header.split(" ");
-    //   header.classList.add(...classes);
-    //   header.classList.remove("ezy-tables-header");
-    // }
+    if (this.htmlClasses.header?.container) {
+      const classes = this.htmlClasses.header.container.split(" ");
+      header.classList.add(...classes);
+      header.classList.remove("ezy-tables-header");
+    }
 
     if (
       !document.querySelector(
@@ -686,11 +698,6 @@ class EasyTables {
     //   footerButtons.classList.add(...classes);
     //   footerButtons.classList.remove("ezy-tables-footer-buttons");
     // }
-
-    header.classList.add(
-      "ezy-tables-header",
-      this.dynamicClasses["ezy-tables-header"]
-    );
 
     //  add header classes if exists
     // if (this.htmlClasses.header) {
