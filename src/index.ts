@@ -706,9 +706,29 @@ class EasyTables {
     //   header.classList.remove("ezy-tables-header");
     // }
 
-    // add per page selector
-    const perPageContainer = document.createElement("div");
-    perPageContainer.classList.add("ezy-tables-per-page-container");
+    let perPageContainer;
+    if (
+      !document.querySelector(
+        `.${this.dynamicClasses["ezy-tables-per-page-container"]}`
+      )
+    ) {
+      // add per page selector
+      perPageContainer = document.createElement("div");
+      perPageContainer.classList.add("ezy-tables-per-page-container");
+    } else {
+      perPageContainer = document.querySelector(
+        `.${this.dynamicClasses["ezy-tables-per-page-container"]}`
+      )!;
+      perPageContainer.innerHTML = "";
+    }
+
+    // add per page container classes if exists
+    if (this.htmlClasses.header?.perPageContainer?.container) {
+      const classes =
+        this.htmlClasses.header.perPageContainer.container.split(" ");
+      perPageContainer.classList.add(...classes);
+      perPageContainer.classList.remove("ezy-tables-per-page-container");
+    }
 
     const perPageLabel = document.createElement("label");
     perPageLabel.classList.add("ezy-tables-per-page-label");
@@ -764,6 +784,13 @@ class EasyTables {
       )!;
     }
 
+    // add search container classes if exists
+    if (this.htmlClasses.header?.search?.container) {
+      const classes = this.htmlClasses.header.search.container.split(" ");
+      searchContainer.classList.add(...classes);
+      searchContainer.classList.remove("ezy-tables-search-container");
+    }
+
     if (
       !document.querySelector(
         `.${this.dynamicClasses["ezy-tables-search-input"]}`
@@ -780,6 +807,13 @@ class EasyTables {
       searchInput = document.querySelector(
         `.${this.dynamicClasses["ezy-tables-search-input"]}`
       )!;
+    }
+
+    // add search input classes if exists
+    if (this.htmlClasses.header?.search?.input) {
+      const classes = this.htmlClasses.header.search.input.split(" ");
+      searchInput.classList.add(...classes);
+      searchInput.classList.remove("ezy-tables-search-input");
     }
 
     if (searchInput) {
@@ -1051,7 +1085,6 @@ class EasyTables {
       }
       .ezy-tables-per-page-select {
         border: 1px solid #ddd;
-        padding: 8px;
         border-radius: 4px;
         background-color: #fff;
         cursor: pointer;
