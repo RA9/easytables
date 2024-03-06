@@ -667,7 +667,7 @@ class EasyTables {
       }
 
       // add header classes if exists
-      if (this.htmlClasses.header?.container) {
+      if (this.htmlClasses?.header?.container) {
         const classes = this.htmlClasses.header.container.split(" ");
         header.classList.add(...classes);
         header.classList.remove("ezy-tables-header");
@@ -915,8 +915,6 @@ class EasyTables {
       `.${this.dynamicClasses["ezy-tables"]} tbody`
     );
 
-    console.log({ tbody }, this.dynamicClasses["ezy-tables"]);
-
     if (!tbody) return;
 
     tbody.innerHTML = "";
@@ -927,15 +925,13 @@ class EasyTables {
       if (this.htmlClasses?.table?.tbody?.tr) {
         // console.log({ tbody }, this.htmlClasses.table.tbody.container)
         const classes = this.htmlClasses.table.tbody.tr.split(" ");
-        tr.classList.add(...classes);
-        // tbody.classList.remove("ezy-tables tbody");
+        tr.setAttribute("class", classes.join(" "));
       }
 
       if (this.htmlClasses?.table?.tbody?.td) {
         // console.log({ tbody }, this.htmlClasses.table.tbody.container)
         const classes = this.htmlClasses.table.tbody.td.split(" ");
-        td.classList.add(...classes);
-        // tbody.classList.remove("ezy-tables tbody");
+        td.setAttribute("class", classes.join(" "));
       }
 
       td.setAttribute("colspan", String(this.columns.length));
@@ -951,6 +947,11 @@ class EasyTables {
       data.forEach((row: any[] | object) => {
         const tr = document.createElement("tr");
 
+        if (this.htmlClasses?.table?.tbody?.tr) {
+          const classes = this.htmlClasses.table.tbody.tr.split(" ");
+          tr.setAttribute("class", classes.join(" "));
+        }
+
         // Check if row is an array or an object
         const isRowArray = Array.isArray(row);
         const values = isRowArray ? row : Object.values(row);
@@ -961,6 +962,11 @@ class EasyTables {
         values.forEach((value, index) => {
           const td = document.createElement("td");
 
+          if (this.htmlClasses?.table?.tbody?.td) {
+            const classes = this.htmlClasses.table.tbody.td.split(" ");
+            td.setAttribute("class", classes.join(" "));
+          }
+
           // Apply plugins
           this.plugins.forEach(plugin => {
             const fields = Array.isArray(plugin.field)
@@ -970,18 +976,6 @@ class EasyTables {
               value = plugin.transform(value, td, tr);
             }
           });
-
-          if (this.htmlClasses?.table?.tbody?.tr) {
-            const classes = this.htmlClasses.table.tbody.tr.split(" ");
-            tr.classList.add(...classes);
-          }
-
-          if (this.htmlClasses?.table?.tbody?.td) {
-            // console.log({ tbody }, this.htmlClasses.table.tbody.container)
-            const classes = this.htmlClasses.table.tbody.td.split(" ");
-            td.classList.add(...classes);
-            // tbody.classList.remove("ezy-tables tbody");
-          }
 
           td.innerHTML = value;
           tr.appendChild(td);
